@@ -11,7 +11,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DAO {
+public class DAO implements IDAO{
 
     public Employee insertEmployee(Employee employee){
         String employeeQuery =
