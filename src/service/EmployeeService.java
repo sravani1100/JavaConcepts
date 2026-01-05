@@ -33,8 +33,7 @@ public class EmployeeService implements IEmployeeService{
 
     @Override
     public List<Employee> getAllEmployees() {
-        List<Employee> employeeList = new ArrayList<>();
-        employeeList = idao.findAll();
+        List<Employee> employeeList = idao.findAll();
         if(employeeList.isEmpty()){
             throw new EmployeeNotFoundException("No employee found!");
         }
@@ -43,41 +42,53 @@ public class EmployeeService implements IEmployeeService{
 
     @Override
     public Employee addEmployee(Employee employee) {
-        if(idao.findEmployeeById(employee.getId()) != null){
-            throw new EmployeeNotFoundException("Employee already exists");
-        }
+
         return idao.insertEmployee(employee);
     }
 
     @Override
     public Employee updateEmployee(Employee employee) {
-        if(idao.findEmployeeById(employee.getId()) == null){
+
+        Employee existingEmployee = idao.findEmployeeById(employee.getId());
+
+        if(existingEmployee == null){
             throw new EmployeeNotFoundException("Employee not found");
         }
-        Address address = new Address();
-        address = idao.findEmployeeById(employee.getId()).getAddress();
+
+        Address address = idao.findEmployeeById(employee.getId()).getAddress();
+        if(address == null){
+            throw new EmployeeNotFoundException("Employee has no address");
+        }
+
         address.setHouseNumber(employee.getAddress().getHouseNumber());
         address.setStreet(employee.getAddress().getStreet());
         address.setCity(employee.getAddress().getCity());
         address.setPincode(employee.getAddress().getPincode());
 
-        Employee updatedEmployee = new Employee();
-        updatedEmployee = idao.findEmployeeById(employee.getId());
-        updatedEmployee.setName(employee.getName());
-        updatedEmployee.setEmail(employee.getEmail());
-        updatedEmployee.setPhoneNumber(employee.getPhoneNumber());
-        updatedEmployee.setAge(employee.getAge());
-        updatedEmployee.setDepartment(employee.getDepartment());
-        updatedEmployee.setAddress(address);
+        existingEmployee.setName(employee.getName());
+        existingEmployee.setEmail(employee.getEmail());
+        existingEmployee.setPhoneNumber(employee.getPhoneNumber());
+        existingEmployee.setAge(employee.getAge());
+        existingEmployee.setDepartment(employee.getDepartment());
+        existingEmployee.setAddress(address);
 
-        return idao.updateEmployee(updatedEmployee);
+        return idao.updateEmployee(existingEmployee);
     }
 
     @Override
-    public void deleteEmployee(Employee employee) {
-        if(idao.findEmployeeById(employee.getId()) == null){
-            throw new EmployeeNotFoundException("No employee found with id " +employee.getId() +"please enter existing employee id");
+    public void deleteEmployee(Long id) {
+        if(idao.findEmployeeById(id) == null){
+            throw new EmployeeNotFoundException("No employee found with id " +id +"please enter existing employee id");
         }
-        idao.deleteEmployeeById(employee.getId());
+        idao.deleteEmployeeById(id);
+    }
+
+    @Override
+    public List<Long> getAllAdress() {
+        List<Long> idList = idao.findAddress();
+        if(idList.isEmpty()){
+            throw new EmployeeNotFoundException("Address is empty");
+        }
+        return idList;
     }
 }

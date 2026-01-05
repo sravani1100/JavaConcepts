@@ -19,6 +19,8 @@ public class DAO implements IDAO{
 
         try(Connection connection = DBConnection.connectDB()){
 
+            connection.setAutoCommit(false);
+
             PreparedStatement addressPS = connection.prepareStatement(addressQuery, Statement.RETURN_GENERATED_KEYS);
             Address address = employee.getAddress();
             addressPS.setString(1, address.getHouseNumber());
@@ -40,12 +42,15 @@ public class DAO implements IDAO{
             ps.setInt(6, addressId);
 
             ps.executeUpdate();
+
+            connection.commit();
+
             System.out.println("Rows Inserted");
 
             return employee;
 
-        }catch(Exception e){
-            e.printStackTrace();
+        }catch(SQLException e){
+            System.out.println("Insertion of employee failed" +e);
             return null;
         }
     }
@@ -53,7 +58,7 @@ public class DAO implements IDAO{
     @Override
     public Employee findEmployeeById(Long id){
 
-        String query = "Select e.id, e.name, e.email, e.phoneNumber, e.age, e.department, a.houseNumber, a.street, a.city, a.pincode " +
+        String query = "Select e.id, e.name, e.email, e.phoneNumber, e.age, e.department, a.id, a.houseNumber, a.street, a.city, a.pincode " +
                 "from employees e "+
                 "join address a "+
                 "on e.address_id = a.id "+
@@ -67,6 +72,7 @@ public class DAO implements IDAO{
 
             if(rs.next()){
                 Address address = new Address();
+                address.setId(rs.getLong("id"));
                 address.setHouseNumber(rs.getString("houseNumber"));
                 address.setStreet(rs.getString("street"));
                 address.setCity(rs.getString("city"));
@@ -164,41 +170,74 @@ public class DAO implements IDAO{
 
     @Override
     public void deleteEmployeeById(Long id){
-        String query = "Delete from employees where id = ?";
+        String findAddress = "Select address_id from employees where id = ?";
+        String employeeQuery = "Delete from employees where id = ?";
+        String addressQuery = "Delete from address where id = ?";
 
         try(Connection connection = DBConnection.connectDB()){
-            PreparedStatement ps = connection.prepareStatement(query);
 
-            ps.setLong(1, id);
-            int rowsEffected = ps.executeUpdate();
-            if(rowsEffected == 0){
-                throw new EmployeeNotFoundException("Employee not found with id "+id);
+            connection.setAutoCommit(false);
+            Long address_id;
+            try(PreparedStatement ps = connection.prepareStatement(findAddress)){
+
+                ps.setLong(1, id);
+                ResultSet rs = ps.executeQuery();
+                if(!rs.next()){
+                    throw new EmployeeNotFoundException("Address not found");
+                }
+                address_id = rs.getLong("address_id");
             }
-        } catch (Exception e) {
-            throw new EmployeeNotFoundException("Error while deleting employee " +e);
+            try(PreparedStatement ps = connection.prepareStatement(employeeQuery)){
+
+                ps.setLong(1, id);
+                ps.executeUpdate();
+            }
+            try(PreparedStatement ps = connection.prepareStatement(addressQuery)){
+
+                ps.setLong(1, id);
+                ps.executeUpdate();
+            }
+            connection.commit();
+
+        }catch (Exception e){
+            System.out.println("Deleting employee failed" +e.getMessage());
         }
     }
 
     @Override
-    public boolean findAddressById(Long id){
-        String query = "select e.address_id " +
-                "from employees e " +
-                "where e.id = ?";
+    public List<Long> findAddress(){
+        String query = "select id from address";
+        String deleteQuery = "Delete from address where id = ?";
+        List<Long> idList = new ArrayList<>();
 
         try(Connection connection = DBConnection.connectDB()){
 
-            PreparedStatement ps = connection.prepareStatement(query);
-            ps.setLong(1, id);
-            ResultSet rs = ps.executeQuery();
+            try(PreparedStatement ps = connection.prepareStatement(query)){
+                ResultSet rs = ps.executeQuery();
+                while(rs.next()){
+                    if(rs.getLong("id") == 6 || rs.getLong("id") == 17){
+                        continue;
+                    }
+                    idList.add(rs.getLong("id"));
+                }
 
-            if(!rs.next()){
-                return false;
+            }
+
+            try(PreparedStatement ps = connection.prepareStatement(deleteQuery)){
+                if(idList.isEmpty()){
+                    throw new EmployeeNotFoundException("Address list is empty");
+                }
+                for(Long id : idList){
+                    ps.setLong(1, id);
+                    ps.addBatch();
+                }
+                ps.executeBatch();
             }
 
         }catch(Exception e){
             throw new EmployeeNotFoundException("Employee not found");
         }
-        return true;
+        return idList;
     }
 
     @Override
@@ -207,7 +246,8 @@ public class DAO implements IDAO{
                 "set name = ?, email = ?, phoneNumber = ?, age = ?, department = ? " +
                 "where id = ?" ;
         String addressQuery = "update address " +
-                "set houseNumber = ?, street = ?, city = ?, pincode = ? " ;
+                "set houseNumber = ?, street = ?, city = ?, pincode = ? " +
+                "where id = ?";
 
         try (Connection connection = DBConnection.connectDB()){
 
@@ -219,6 +259,7 @@ public class DAO implements IDAO{
                 ps.setString(2, employee.getAddress().getStreet());
                 ps.setString(3, employee.getAddress().getCity());
                 ps.setString(4, employee.getAddress().getPincode());
+                ps.setLong(5, employee.getAddress().getId());
                 ps.executeUpdate();
             }
 
@@ -239,6 +280,27 @@ public class DAO implements IDAO{
 
         } catch (SQLException e) {
             throw new RuntimeException("Updating employee failed", e);
+        }
+    }
+
+    public void deleteAddressInBatch(List<Long> addressId){
+
+        String query = "Delete from address where id = ?";
+        try(Connection connection = DBConnection.connectDB()){
+            PreparedStatement ps = connection.prepareStatement(query);
+
+            for(Long id : addressId){
+                if(id == 6 || id == 17){
+                    continue;
+                }
+                ps.setLong(1, id);
+                ps.addBatch();
+            }
+
+            ps.executeBatch();
+
+        } catch (Exception e) {
+            System.out.println("BatchDelete failed");
         }
     }
     

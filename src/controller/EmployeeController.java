@@ -4,6 +4,8 @@ import exception.EmployeeNotFoundException;
 import modal.Employee;
 import service.IEmployeeService;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class EmployeeController{
@@ -44,7 +46,7 @@ public class EmployeeController{
         try{
             return employeeService.addEmployee(employee);
         }catch (EmployeeNotFoundException e){
-            System.out.println(e.getMessage());
+            System.out.println("controller " +e.getMessage());
             return null;
         }
     }
@@ -58,12 +60,21 @@ public class EmployeeController{
         }
     }
 
-    public void deleteEmployee(Employee employee) {
+    public void deleteEmployee(Long id) {
         try{
-            employeeService.deleteEmployee(employee);
+            employeeService.deleteEmployee(id);
             System.out.println("Employee deleted successfully");
         }catch (EmployeeNotFoundException e){
             System.out.println(e.getMessage());
+        }
+    }
+
+    public List<Long> getAddresses(){
+        try {
+            return employeeService.getAllAdress();
+        }catch (EmployeeNotFoundException e){
+            System.out.println("Address table is empty");
+            return Collections.emptyList();
         }
     }
 }

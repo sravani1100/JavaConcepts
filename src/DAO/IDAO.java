@@ -12,6 +12,7 @@ public interface IDAO {
     Employee findEmployeeByName(String name);
     List<Employee> findAll();
     void deleteEmployeeById(Long id);
-    boolean findAddressById(Long id);
+    List<Long> findAddress();
     Employee updateEmployee(Employee employee);
+    void deleteAddressInBatch(List<Long> addressId);
 }

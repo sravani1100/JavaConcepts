@@ -78,9 +78,10 @@ public class Main {
         employee.setPhoneNumber("9666531246");
         employee.setAge(32);
         employee.setDepartment("Security");
-        employee.setAddress(address);*/
+        employee.setAddress(address);
 
-       // controller.addEmployee(employee);
+        controller.addEmployee(employee);*/
+
         /*List<Employee> employeeList = new ArrayList<>();
         employeeList = controller.getAllEmployees();
         for(Employee employee1 : employeeList){
@@ -93,8 +94,7 @@ public class Main {
                                 +employee1.getAddress().getPincode());
         }*/
 
-        Employee employee = new Employee();
-        employee = controller.getEmployeeById(2L);
+        /*Employee employee = controller.getEmployeeById(9L);
         System.out.println("Employee found By Id " +employee.getId());
         System.out.println(employee.getName() +" "
                 +employee.getEmail()+" "
@@ -103,9 +103,9 @@ public class Main {
                 +employee.getDepartment()+" "
                 +employee.getAddress().getCity()+" "
                 +employee.getAddress().getPincode());
-        System.out.println();
+        System.out.println();*/
 
-        /*employee = controller.getEmployeeByName("sravani");
+        /*Employee employee = controller.getEmployeeByName("ashwitha");
         System.out.println("Employe with name "+employee.getName());
         System.out.println(employee.getId()+" "
                             +employee.getName()+" "
@@ -114,32 +114,34 @@ public class Main {
                             +employee.getAddress().getCity());*/
 
 
-        Employee employeeToBeUpdated = controller.getEmployeeById(2L);
+        /*Employee employeeToBeUpdated = controller.getEmployeeById(5L);
         employeeToBeUpdated.setAge(26);
+        employeeToBeUpdated.getAddress().setCity("Srirampur");
         Employee updatedEmployee = controller.updateEmployee(employeeToBeUpdated);
         System.out.println("Updated Employee with Id " +updatedEmployee.getId());
-        System.out.println(employee.getName() +" "
-                +employee.getEmail()+" "
-                +employee.getPhoneNumber()+" "
-                +employee.getAge()+" "
-                +employee.getDepartment()+" "
-                +employee.getAddress().getCity()+" "
-                +employee.getAddress().getPincode());
+        System.out.println(updatedEmployee.getName() +" "
+                +updatedEmployee.getEmail()+" "
+                +updatedEmployee.getPhoneNumber()+" "
+                +updatedEmployee.getAge()+" "
+                +updatedEmployee.getDepartment()+" "
+                +updatedEmployee.getAddress().getCity()+" "
+                +updatedEmployee.getAddress().getPincode());*/
 
-        controller.deleteEmployee(controller.getEmployeeById(2L));
+        //controller.deleteEmployee(6L);
 
 
-        System.out.println("After delete : \n" );
+        /*System.out.println("After delete : \n" );
 
-        List<Employee> employeeList = new ArrayList<>();
-        employeeList = dao.findAll();
+        List<Employee> employeeList = controller.getAllEmployees();;
         for(Employee employe : employeeList){
             System.out.println(employe.getName() +" "
                     +employe.getAge() +" "
                     +employe.getDepartment() +" "
                     +employe.getAddress().getCity());
             System.out.println();
-        }
+        }*/
+
+        controller.getAddresses();
 
     }
 }
