@@ -13,5 +13,5 @@ public interface IDAO {
     List<Employee> findAll();
     void deleteEmployeeById(Long id);
     boolean findAddressById(Long id);
-    Employee save(Employee employee);
+    Employee updateEmployee(Employee employee);
 }

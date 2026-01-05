@@ -4,15 +4,13 @@ import exception.EmployeeNotFoundException;
 import modal.Address;
 import modal.Employee;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class DAO implements IDAO{
 
+    @Override
     public Employee insertEmployee(Employee employee){
         String employeeQuery =
                 "INSERT INTO employees(name, email, phoneNumber, age, department,address_id) VALUES(?, ?, ?, ?, ?, ?)";
@@ -41,20 +39,21 @@ public class DAO implements IDAO{
             ps.setString(5, employee.getDepartment());
             ps.setInt(6, addressId);
 
-            int rows = ps.executeUpdate();
+            ps.executeUpdate();
             System.out.println("Rows Inserted");
 
             return employee;
 
         }catch(Exception e){
             e.printStackTrace();
+            return null;
         }
-        return null;
     }
 
+    @Override
     public Employee findEmployeeById(Long id){
 
-        String query = "Select e.name, e.email, e.phoneNumber, e.age, e.department, a.houseNumber, a.street, a.city, a.pincode " +
+        String query = "Select e.id, e.name, e.email, e.phoneNumber, e.age, e.department, a.houseNumber, a.street, a.city, a.pincode " +
                 "from employees e "+
                 "join address a "+
                 "on e.address_id = a.id "+
@@ -74,6 +73,7 @@ public class DAO implements IDAO{
                 address.setPincode(rs.getString("pincode"));
 
                 Employee employee = new Employee();
+                employee.setId(rs.getLong("id"));
                 employee.setName(rs.getString("name"));
                 employee.setEmail(rs.getString("email"));
                 employee.setPhoneNumber(rs.getString("phoneNumber"));
@@ -90,9 +90,10 @@ public class DAO implements IDAO{
         return null;
     }
 
+    @Override
     public Employee findEmployeeByName(String name) {
 
-        String query = "select e.name, e.age, e.department, a.city " +
+        String query = "select e.id, e.name, e.age, e.department, a.city " +
                 "from employees e " +
                 "join address a " +
                 "on e.address_id = a.id " +
@@ -112,6 +113,7 @@ public class DAO implements IDAO{
                 address.setCity(rs.getString("city"));
 
                 Employee employee = new Employee();
+                employee.setId(rs.getLong("id"));
                 employee.setName(rs.getString("name"));
                 employee.setAge(rs.getInt("age"));
                 employee.setDepartment(rs.getString("department"));
@@ -125,10 +127,11 @@ public class DAO implements IDAO{
         }
     }
 
+    @Override
     public List<Employee> findAll(){
         List<Employee> employeeList = new ArrayList<>();
 
-        String query = "Select e.name, e.age, e.department, a.city " +
+        String query = "Select e.name, e.email, e.phoneNumber, e.age, e.department, a.city, a.pincode " +
                 "from employees e " +
                 "join address a " +
                 "on e.address_id = a.id ";
@@ -141,9 +144,12 @@ public class DAO implements IDAO{
             while(rs.next()){
                 Address address = new Address();
                 address.setCity(rs.getString("city"));
+                address.setPincode(rs.getString("pincode"));
 
                 Employee employee = new Employee();
                 employee.setName(rs.getString("name"));
+                employee.setEmail(rs.getString("email"));
+                employee.setPhoneNumber(rs.getString("phoneNumber"));
                 employee.setAge(rs.getInt("age"));
                 employee.setDepartment(rs.getString("department"));
                 employee.setAddress(address);
@@ -156,13 +162,14 @@ public class DAO implements IDAO{
         return employeeList;
     }
 
+    @Override
     public void deleteEmployeeById(Long id){
         String query = "Delete from employees where id = ?";
 
         try(Connection connection = DBConnection.connectDB()){
             PreparedStatement ps = connection.prepareStatement(query);
 
-            ps.setLong(1, 1L);
+            ps.setLong(1, id);
             int rowsEffected = ps.executeUpdate();
             if(rowsEffected == 0){
                 throw new EmployeeNotFoundException("Employee not found with id "+id);
@@ -172,6 +179,7 @@ public class DAO implements IDAO{
         }
     }
 
+    @Override
     public boolean findAddressById(Long id){
         String query = "select e.address_id " +
                 "from employees e " +
@@ -193,8 +201,45 @@ public class DAO implements IDAO{
         return true;
     }
 
-    public Employee save(Employee employee){
-        return insertEmployee(employee);
+    @Override
+    public Employee updateEmployee(Employee employee){
+        String employeeQuery = "update employees " +
+                "set name = ?, email = ?, phoneNumber = ?, age = ?, department = ? " +
+                "where id = ?" ;
+        String addressQuery = "update address " +
+                "set houseNumber = ?, street = ?, city = ?, pincode = ? " ;
+
+        try (Connection connection = DBConnection.connectDB()){
+
+            connection.setAutoCommit(false);
+
+            try(PreparedStatement ps = connection.prepareStatement(addressQuery)){
+
+                ps.setString(1, employee.getAddress().getHouseNumber());
+                ps.setString(2, employee.getAddress().getStreet());
+                ps.setString(3, employee.getAddress().getCity());
+                ps.setString(4, employee.getAddress().getPincode());
+                ps.executeUpdate();
+            }
+
+            try(PreparedStatement ps = connection.prepareStatement(employeeQuery)){
+
+                ps.setString(1, employee.getName());
+                ps.setString(2, employee.getEmail());
+                ps.setString(3, employee.getPhoneNumber());
+                ps.setInt(4, employee.getAge());
+                ps.setString(5, employee.getDepartment());
+                ps.setLong(6, employee.getId());
+                ps.executeUpdate();
+            }
+
+            connection.commit();
+
+            return employee;
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Updating employee failed", e);
+        }
     }
     
 }

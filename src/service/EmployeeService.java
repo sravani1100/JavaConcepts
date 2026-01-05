@@ -70,7 +70,7 @@ public class EmployeeService implements IEmployeeService{
         updatedEmployee.setDepartment(employee.getDepartment());
         updatedEmployee.setAddress(address);
 
-        return idao.save(updatedEmployee);
+        return idao.updateEmployee(updatedEmployee);
     }
 
     @Override
