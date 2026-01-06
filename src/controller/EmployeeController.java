@@ -77,4 +77,35 @@ public class EmployeeController{
             return Collections.emptyList();
         }
     }
+
+    public List<Employee> getEmployeesByDepartment(String name){
+        try{
+            return employeeService.getEmployeesByDepartment(name);
+        }catch (EmployeeNotFoundException e){
+            System.out.println("Department not exist");
+            return Collections.emptyList();
+        }
+    }
+
+    public void deleteAddress(List<Long> id){
+        try{
+            employeeService.deleteAdress(id);
+            System.out.println("Deleted successfully");
+        }catch (EmployeeNotFoundException e){
+            System.out.println("Address batch is empty");
+        }
+    }
+
+    public List<Employee> addEmployeeInBatch(List<Employee> employees){
+        try{
+
+            List<Employee> employeeList = employeeService.addEmployeeInBatch(employees);
+            System.out.println("Employyees added successfully");
+            return employeeList;
+
+        }catch (EmployeeNotFoundException e){
+            System.out.println(e.getMessage()   );
+            return Collections.emptyList();
+        }
+    }
 }

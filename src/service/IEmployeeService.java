@@ -13,6 +13,9 @@ public interface IEmployeeService {
     Employee updateEmployee(Employee employee);
     void deleteEmployee(Long id);
     List<Long> getAllAdress();
+    List<Employee> getEmployeesByDepartment(String name);
+    void deleteAdress(List<Long> id);
+    List<Employee> addEmployeeInBatch(List<Employee> employees);
 
 
 }

@@ -15,4 +15,5 @@ public interface IDAO {
     List<Long> findAddress();
     Employee updateEmployee(Employee employee);
     void deleteAddressInBatch(List<Long> addressId);
+    List<Employee> addEmployeesInBatch(List<Employee> employees);
 }

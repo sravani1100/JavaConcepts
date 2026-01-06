@@ -7,6 +7,7 @@ import service.IEmployeeService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
@@ -141,7 +142,73 @@ public class Main {
             System.out.println();
         }*/
 
-        controller.getAddresses();
+        //controller.getAddresses();
+        /*List<Employee> employeeList = controller.getEmployeesByDepartment("Computer");
+        for(Employee employee : employeeList){
+            System.out.println(employee.getName() +" "
+                    +employee.getAge() +" "
+                    +employee.getDepartment() +" "
+                    +employee.getAddress().getCity());
+            System.out.println();
+        }*/
+
+        /*List<Long> list = controller.getAddresses();
+        controller.deleteAddress(list);*/
+
+        Scanner sc = new Scanner(System.in);
+        System.out.println("Enter number of employees: ");
+        int num = sc.nextInt();
+
+        List<Employee> employeeList = new ArrayList<>();
+        for(int i = 1; i <= num; i++){
+
+            System.out.println("Employee "+i);
+
+            System.out.println("Name : ");
+            String name = sc.next();
+
+            System.out.println("Email : ");
+            String email = sc.next();
+
+            System.out.println("PhoneNumber : ");
+            String phoneNumber = sc.next();
+
+            System.out.println("Age : ");
+            int age = sc.nextInt();
+
+            System.out.println("Department : ");
+            String department = sc.next();
+
+            System.out.println("HouseNumber : ");
+            String houseNumber = sc.next();
+
+            System.out.println("Street : ");
+            String street = sc.next();
+
+            System.out.println("City : ");
+            String city = sc.next();
+
+            System.out.println("Pincode : ");
+            String pincode = sc.next();
+
+            Address address = new Address();
+            address.setHouseNumber(houseNumber);
+            address.setStreet(street);
+            address.setCity(city);
+            address.setPincode(pincode);
+
+            Employee employee = new Employee();
+            employee.setName(name);
+            employee.setEmail(email);
+            employee.setPhoneNumber(phoneNumber);
+            employee.setAge(age);
+            employee.setDepartment(department);
+            employee.setAddress(address);
+
+            employeeList.add(employee);
+        }
+
+        controller.addEmployeeInBatch(employeeList);
 
     }
 }

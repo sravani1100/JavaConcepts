@@ -207,7 +207,6 @@ public class DAO implements IDAO{
     @Override
     public List<Long> findAddress(){
         String query = "select id from address";
-        String deleteQuery = "Delete from address where id = ?";
         List<Long> idList = new ArrayList<>();
 
         try(Connection connection = DBConnection.connectDB()){
@@ -215,23 +214,9 @@ public class DAO implements IDAO{
             try(PreparedStatement ps = connection.prepareStatement(query)){
                 ResultSet rs = ps.executeQuery();
                 while(rs.next()){
-                    if(rs.getLong("id") == 6 || rs.getLong("id") == 17){
-                        continue;
-                    }
                     idList.add(rs.getLong("id"));
                 }
 
-            }
-
-            try(PreparedStatement ps = connection.prepareStatement(deleteQuery)){
-                if(idList.isEmpty()){
-                    throw new EmployeeNotFoundException("Address list is empty");
-                }
-                for(Long id : idList){
-                    ps.setLong(1, id);
-                    ps.addBatch();
-                }
-                ps.executeBatch();
             }
 
         }catch(Exception e){
@@ -303,5 +288,52 @@ public class DAO implements IDAO{
             System.out.println("BatchDelete failed");
         }
     }
-    
+
+    @Override
+    public List<Employee> addEmployeesInBatch(List<Employee> employees) {
+        String query = "Insert into employees(name, email, phoneNumber, age, department,address_id) values(?, ?, ?, ?, ?, ?)";
+        String addressQuery = "Insert into address(houseNumber, street, city, pincode) values(?, ?, ?, ?)";
+
+        List<Employee> employeeList = new ArrayList<>();
+
+        try(Connection connection = DBConnection.connectDB()){
+
+            connection.setAutoCommit(false);
+
+            PreparedStatement ad = connection.prepareStatement(addressQuery, Statement.RETURN_GENERATED_KEYS);
+
+            for(Employee employee : employees){
+
+                Address address = employee.getAddress();
+                ad.setString(1, address.getHouseNumber());
+                ad.setString(2, address.getStreet());
+                ad.setString(3, address.getCity());
+                ad.setString(4, address.getPincode());
+                ad.addBatch();
+
+            }
+            ad.executeBatch();
+            ResultSet rs = ad.getGeneratedKeys();
+            PreparedStatement emp = connection.prepareStatement(query);
+            int i = 0;
+            while(rs.next()){
+                Employee employee = employees.get(i++);
+
+                emp.setString(1, employee.getName());
+                emp.setString(2, employee.getEmail());
+                emp.setString(3, employee.getPhoneNumber());
+                emp.setInt(4, employee.getAge());
+                emp.setString(5, employee.getDepartment());
+                emp.setLong(6, rs.getInt(1));
+
+                emp.addBatch();
+            }
+            emp.executeBatch();
+            connection.commit();
+
+        }catch (Exception e){
+            System.out.println("Adding employee batch failed");
+        }
+        return employees;
+    }
 }

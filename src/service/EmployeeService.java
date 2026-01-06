@@ -91,4 +91,34 @@ public class EmployeeService implements IEmployeeService{
         }
         return idList;
     }
+
+    @Override
+    public List<Employee> getEmployeesByDepartment(String name) {
+        List<Employee> employeeList = idao.findAll();
+
+        List<Employee> resultList = employeeList.stream()
+                .filter(e -> name.equalsIgnoreCase(e.getDepartment()))
+                .toList();
+        if(resultList.isEmpty()){
+            throw new EmployeeNotFoundException("No employee found with given department");
+        }
+        return resultList;
+    }
+
+    @Override
+    public void deleteAdress(List<Long> id) {
+        if(id.isEmpty()){
+            throw new EmployeeNotFoundException("Address ids not found");
+        }
+        idao.deleteAddressInBatch(id);
+    }
+
+    @Override
+    public List<Employee> addEmployeeInBatch(List<Employee> employees) {
+        if(employees.isEmpty()){
+            throw new EmployeeNotFoundException("Provide employee details");
+        }
+
+        return idao.addEmployeesInBatch(employees);
+    }
 }
