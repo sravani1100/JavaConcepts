@@ -297,39 +297,38 @@ public class DAO implements IDAO{
         List<Employee> employeeList = new ArrayList<>();
 
         try(Connection connection = DBConnection.connectDB()){
+                connection.setAutoCommit(false);
 
-            connection.setAutoCommit(false);
+                PreparedStatement ad = connection.prepareStatement(addressQuery, Statement.RETURN_GENERATED_KEYS);
 
-            PreparedStatement ad = connection.prepareStatement(addressQuery, Statement.RETURN_GENERATED_KEYS);
+                for (Employee employee : employees) {
 
-            for(Employee employee : employees){
+                    Address address = employee.getAddress();
+                    ad.setString(1, address.getHouseNumber());
+                    ad.setString(2, address.getStreet());
+                    ad.setString(3, address.getCity());
+                    ad.setString(4, address.getPincode());
+                    ad.addBatch();
 
-                Address address = employee.getAddress();
-                ad.setString(1, address.getHouseNumber());
-                ad.setString(2, address.getStreet());
-                ad.setString(3, address.getCity());
-                ad.setString(4, address.getPincode());
-                ad.addBatch();
+                }
+                ad.executeBatch();
+                ResultSet rs = ad.getGeneratedKeys();
+                PreparedStatement emp = connection.prepareStatement(query);
+                int i = 0;
+                while (rs.next()) {
+                    Employee employee = employees.get(i++);
 
-            }
-            ad.executeBatch();
-            ResultSet rs = ad.getGeneratedKeys();
-            PreparedStatement emp = connection.prepareStatement(query);
-            int i = 0;
-            while(rs.next()){
-                Employee employee = employees.get(i++);
+                    emp.setString(1, employee.getName());
+                    emp.setString(2, employee.getEmail());
+                    emp.setString(3, employee.getPhoneNumber());
+                    emp.setInt(4, employee.getAge());
+                    emp.setString(5, employee.getDepartment());
+                    emp.setLong(6, rs.getInt(1));
 
-                emp.setString(1, employee.getName());
-                emp.setString(2, employee.getEmail());
-                emp.setString(3, employee.getPhoneNumber());
-                emp.setInt(4, employee.getAge());
-                emp.setString(5, employee.getDepartment());
-                emp.setLong(6, rs.getInt(1));
-
-                emp.addBatch();
-            }
-            emp.executeBatch();
-            connection.commit();
+                    emp.addBatch();
+                }
+                emp.executeBatch();
+                connection.commit();
 
         }catch (Exception e){
             System.out.println("Adding employee batch failed");

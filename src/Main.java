@@ -5,6 +5,7 @@ import modal.Employee;
 import service.EmployeeService;
 import service.IEmployeeService;
 
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -155,7 +156,8 @@ public class Main {
         /*List<Long> list = controller.getAddresses();
         controller.deleteAddress(list);*/
 
-        Scanner sc = new Scanner(System.in);
+
+        /*Scanner sc = new Scanner(System.in);
         System.out.println("Enter number of employees: ");
         int num = sc.nextInt();
 
@@ -207,8 +209,46 @@ public class Main {
 
             employeeList.add(employee);
         }
+*/
+        List<Employee> employeeList = new ArrayList<>();
 
-        controller.addEmployeeInBatch(employeeList);
+        try(BufferedReader br = new BufferedReader(new FileReader("C:\\sravani\\github\\Java_Concepts\\JavaConcepts\\src\\resource\\employeeList.csv"))){
+            br.readLine();
+            String line;
 
+            while((line = br.readLine()) != null){
+                if (line.trim().isEmpty()) {
+                    continue;
+                }
+
+                String[] row = line.split(",");
+
+
+                if (row.length < 9) {
+                    System.out.println("Invalid row skipped: " + line);
+                    continue;
+                }
+
+                Address address = new Address();
+                address.setHouseNumber(row[5]);
+                address.setStreet(row[6]);
+                address.setCity(row[7]);
+                address.setPincode(row[8]);
+
+                Employee employee = new Employee();
+                employee.setName(row[0].trim());
+                employee.setEmail(row[1].trim());
+                employee.setPhoneNumber(row[2].trim());
+                employee.setAge(Integer.parseInt(row[3]));
+                employee.setDepartment(row[4]);
+                employee.setAddress(address);
+
+                employeeList.add(employee);
+            }
+            controller.addEmployeeInBatch(employeeList);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Actual error above", e);
+        }
     }
 }
